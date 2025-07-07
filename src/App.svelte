@@ -1,18 +1,38 @@
 <script>
   import Icon from "@iconify/svelte";
+  function openCloseMenu() {
+    const salon = document.getElementById("nav_salon");
+    salon.classList.toggle("open");
+  }
 </script>
 
-<section class="main_chat open">
+<section class="main_chat">
   <nav>
     <div class="setting_icon">
-      <button type="button" class="open" id="menu"
-        ><Icon id="menu_burger" icon="typcn:th-menu" /></button
+      <button type="button" id="menu"
+        ><Icon
+          id="menu_burger"
+          icon="typcn:th-menu"
+          onclick={openCloseMenu}
+        /></button
       >
       <button type="button" id="setting">
         <Icon id="gear" icon="typcn:cog" />
       </button>
     </div>
-    <section class="nav_salon close">
+    <section id="nav_salon">
+      <div class="onglet_salon">
+        <h1>discution</h1>
+        <button type="button" id="delete"
+          ><Icon id="cross" icon="typcn:times-outline" /></button
+        >
+      </div>
+      <div class="onglet_salon">
+        <h1>di</h1>
+        <button type="button" id="delete"
+          ><Icon id="cross" icon="typcn:times-outline" /></button
+        >
+      </div>
       <div class="onglet_salon">
         <h1>discution</h1>
         <button type="button" id="delete"
@@ -65,7 +85,7 @@
   nav {
     display: flex;
     flex-direction: column;
-    width: 40vw;
+    margin-right: auto;
     padding: 10px 10px 10px 0;
     gap: 30px;
     background-color: var(--blue-color);
@@ -81,6 +101,7 @@
     flex-direction: row;
     justify-content: space-between;
     margin: 0 5px;
+    min-width: 30vw;
   }
 
   #menu,
@@ -91,8 +112,10 @@
     background-color: var(--grey-color);
     border-radius: 50%;
   }
-  .nav_salon {
-    height: 75vh;
+  #nav_salon {
+    min-height: 30vh;
+    max-height: 75vh;
+    display: none;
   }
 
   .onglet_salon {
@@ -100,7 +123,8 @@
     justify-content: space-between;
     background-color: var(--grey-color);
     border-radius: 0 20px 20px 0;
-    width: 90%;
+
+    max-width: 95%;
     min-height: 2.5em;
   }
 
@@ -119,6 +143,8 @@
   }
 
   .discution {
+    position: fixed;
+    top: 0;
     display: flex;
     flex-direction: column;
     padding: 20px 0;
@@ -174,7 +200,10 @@
     cursor: pointer;
     transition: transform 0.3s ease;
   }
-  .close {
-    display: none;
+  .open {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    width: 50vw;
   }
 </style>
