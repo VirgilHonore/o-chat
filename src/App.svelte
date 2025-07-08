@@ -1,12 +1,17 @@
 <script>
   import Icon from "@iconify/svelte";
-  let salon = "";
+  let salon;
   function openCloseMenu() {
-    salon.classList.toggle("open");
+    salon.classList.toggle("close");
   }
 </script>
 
+<!-- ________________^^__JS___^^________________ -->
+
+<!-- ________________vv__html___vv________________ -->
+
 <section class="main_chat">
+  <!-- _______nav_________ -->
   <nav>
     <div class="setting_icon">
       <button type="button" id="menu" onclick={openCloseMenu}
@@ -16,27 +21,30 @@
         <Icon id="gear" icon="typcn:cog" />
       </button>
     </div>
-    <ul bind:this={salon} class="open nav_salon">
+    <ul bind:this={salon} class="nav_salon close">
       <li class="onglet_salon">
-        <h1>discussion</h1>
+        <h2>discussion</h2>
         <button type="button" id="delete">
           <Icon id="cross" icon="typcn:times-outline" />
         </button>
       </li>
       <li class="onglet_salon">
-        <h1>di</h1>
+        <h2>di</h2>
         <button type="button" id="delete">
           <Icon id="cross" icon="typcn:times-outline" />
         </button>
       </li>
       <li class="onglet_salon">
-        <h1>discussion</h1>
+        <h2>discussion</h2>
         <button type="button" id="delete">
           <Icon id="cross" icon="typcn:times-outline" />
         </button>
       </li>
     </ul>
   </nav>
+  <!-- _______nav_________ -->
+
+  <!-- ______Chat_________ -->
   <section class="discussion">
     <section class="question">
       <span class="id_user"
@@ -61,11 +69,21 @@
       </p>
     </section>
   </section>
+  <!-- ______Chat_________ -->
+
+  <!-- ______input_________ -->
 </section>
 <form class="input_user">
   <input type="text" placeholder="Écris ici" />
   <button type="submit" id="btn_sub"></button>
 </form>
+/*menu toujours cassé a 900px on verra plus tard */
+
+<!-- ______input_________ -->
+
+<!-- ________________^^__html___^^________________ -->
+
+<!-- ________________vv__CSS___vv________________ -->
 
 <style>
   :root {
@@ -78,6 +96,7 @@
     flex-direction: column;
     height: 100vh;
   }
+
   nav {
     display: flex;
     flex-direction: column;
@@ -90,7 +109,7 @@
     left: 0;
     top: 0;
     z-index: 99;
-    transition: max-height;
+    min-width: 130px;
   }
 
   .setting_icon {
@@ -98,7 +117,6 @@
     flex-direction: row;
     justify-content: space-between;
     margin: 0 5px;
-    min-width: 30vw;
   }
 
   #menu,
@@ -110,9 +128,11 @@
     border-radius: 50%;
   }
   .nav_salon {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    gap: 1em;
     min-height: 30vh;
-    max-height: 75vh;
-    display: none;
   }
 
   .onglet_salon {
@@ -120,17 +140,17 @@
     justify-content: space-between;
     background-color: var(--grey-color);
     border-radius: 0 20px 20px 0;
-
     max-width: 95%;
     min-height: 2.5em;
+
+    h2 {
+      margin: auto 0;
+      padding: 0.3rem;
+      font-size: 20px;
+      font-weight: normal;
+    }
   }
 
-  .onglet_salon h1 {
-    margin: auto 0;
-    padding: 0.3rem;
-    font-size: 20px;
-    font-weight: normal;
-  }
   #menu :global(svg),
   #setting :global(svg),
   #delete :global(svg) {
@@ -140,7 +160,7 @@
   }
 
   .discussion {
-    position: fixed;
+    position: absolute;
     top: 0;
     display: flex;
     flex-direction: column;
@@ -171,8 +191,12 @@
   }
 
   .input_user {
-    position: fixed;
+    position: absolute;
     bottom: 0;
+    /* la cest creer par IA jai pas compris je reviendrai dessu plus tard*/
+    left: 50%;
+    transform: translateX(-50%);
+    /*______________________________________________________________*/
     display: flex;
     justify-content: space-between;
     width: 100%;
@@ -180,6 +204,7 @@
     border-radius: 20px 20px 0 0;
     padding: 10px;
     margin-top: 10px;
+    max-width: 900px;
   }
 
   #btn_sub {
@@ -197,11 +222,34 @@
     cursor: pointer;
     transition: transform 0.3s ease;
   }
-  .open {
-    display: initial;
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    width: 50vw;
+
+  .close {
+    display: none;
+  }
+
+  /* ___________  passage en descktop ___________ */
+  @media screen and (min-width: 900px) {
+    .main_chat {
+      flex-direction: row;
+    }
+
+    nav {
+      position: relative;
+      height: 80vh;
+      width: 200px;
+    }
+
+    .nav_salon {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .discussion {
+      position: relative;
+    }
+
+    #menu {
+      display: none;
+    }
   }
 </style>
