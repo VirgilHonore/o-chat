@@ -359,10 +359,14 @@ button {
   margin: 0;
   padding: 0;
 }
-input {
+/*___________ cree par ia_________________ */
+input, textarea {
   background-color: inherit;
   border: none;
+   resize: none;
+    outline: none;
 }
+/*___________________________________________*/
 body {
   margin: 0;
   height: 100vh;

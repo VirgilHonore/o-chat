@@ -1,8 +1,26 @@
 <script>
+  // P0lO5TWsVKCAjlyPFu7pN4cOT5GLAx5E
   import Icon from "@iconify/svelte";
   let salon;
   function openCloseMenu() {
     salon.classList.toggle("close");
+  }
+
+  /*_________________connexion Mistral________________________*/
+  let messageToIa;
+  async function sendToIa(event) {
+    event.preventDefault();
+
+    const response = await fetch("https://api.mistral.ai/v1/endpoint", {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer P0lO5TWsVKCAjlyPFu7pN4cOT5GLAx5E",
+      },
+    });
+
+    console.log("✅ Response object:", response);
+    const result = await response.json();
+    console.log("🧠 Réponse IA :", result);
   }
 </script>
 
@@ -69,15 +87,19 @@
       </p>
     </section>
   </section>
-  <!-- ______Chat_________ -->
-
-  <!-- ______input_________ -->
 </section>
-<form class="input_user">
-  <input type="text" placeholder="Écris ici" />
-  <button type="submit" id="btn_sub"></button>
+<!-- ______Chat_________ -->
+
+<!-- ______input_________ -->
+<form class="terminal_user" onsubmit={sendToIa}>
+  <textarea
+    name="input_user"
+    id="input_user"
+    placeholder="Écris ici"
+    bind:value={messageToIa}
+  ></textarea>
+  <input type="submit" value="" id="btn_sub" />
 </form>
-/*menu toujours cassé a 900px on verra plus tard */
 
 <!-- ______input_________ -->
 
@@ -86,6 +108,8 @@
 <!-- ________________vv__CSS___vv________________ -->
 
 <style>
+  /*attention du css a etait ajouté a normalize*/
+
   :root {
     --blue-color: #237ac0;
     --red-color: #ff5656;
@@ -110,6 +134,7 @@
     top: 0;
     z-index: 99;
     min-width: 130px;
+    /* max-width: 30%; */
   }
 
   .setting_icon {
@@ -162,10 +187,12 @@
   .discussion {
     position: absolute;
     top: 0;
+    right: 0;
     display: flex;
     flex-direction: column;
     padding: 20px 0;
     gap: 20px;
+    width: 100%;
   }
 
   .question {
@@ -188,9 +215,10 @@
     padding: 0.5em;
     border-radius: 20px;
     margin: 0 10px;
+    margin-right: auto;
   }
 
-  .input_user {
+  .terminal_user {
     position: absolute;
     bottom: 0;
     /* la cest creer par IA jai pas compris je reviendrai dessu plus tard*/
@@ -205,6 +233,10 @@
     padding: 10px;
     margin-top: 10px;
     max-width: 900px;
+  }
+
+  #input_user {
+    width: 100%;
   }
 
   #btn_sub {
@@ -222,9 +254,10 @@
     cursor: pointer;
     transition: transform 0.3s ease;
   }
-
-  .close {
-    display: none;
+  @media screen and (max-width: 900px) {
+    .close {
+      display: none;
+    }
   }
 
   /* ___________  passage en descktop ___________ */
@@ -236,7 +269,7 @@
     nav {
       position: relative;
       height: 80vh;
-      width: 200px;
+      width: 210px;
     }
 
     .nav_salon {
@@ -252,4 +285,5 @@
       display: none;
     }
   }
+  /*menu toujours cassé a 900px on verra plus tard */
 </style>
