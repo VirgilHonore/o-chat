@@ -1,26 +1,85 @@
 <script>
-  // P0lO5TWsVKCAjlyPFu7pN4cOT5GLAx5E
   import Icon from "@iconify/svelte";
   let salon;
   function openCloseMenu() {
     salon.classList.toggle("close");
   }
 
-  /*_________________connexion Mistral________________________*/
-  let messageToIa;
-  async function sendToIa(event) {
+  let conversation = $state([]);
+
+  /*_________________vérif token________________________*/
+  let verif_Token;
+  let tokenUser = $state("");
+  async function verifToken(event) {
     event.preventDefault();
 
-    const response = await fetch("https://api.mistral.ai/v1/endpoint", {
-      method: "GET",
+    const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+      method: "post",
+      headers: {
+        Authorization: "Bearer " + tokenUser,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "mistral-small-latest",
+        messages: [{ role: "user", content: "." }],
+      }),
+    });
+    if (response.status === 200) {
+      localStorage.setItem("maCle", tokenUser);
+      verif_Token.classList.toggle("close");
+    } else {
+    }
+
+    console.log(response.status);
+  }
+
+  /*_________________connexion Mistral________________________*/
+  let messageToIa = $state("");
+  let answerIa = $state("");
+  let timestampIA = $state(null);
+  let userInput = {
+    role: "user",
+    content: messageToIa,
+  };
+  let messageUser;
+
+  async function sendToIa(event) {
+    event.preventDefault();
+    messageUser = messageToIa;
+    /*________comunication ia___________*/
+    const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+      method: "post",
       headers: {
         Authorization: "Bearer P0lO5TWsVKCAjlyPFu7pN4cOT5GLAx5E",
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        model: "mistral-small-latest",
+        messages: [
+          {
+            role: "system",
+            content:
+              "Tu es un assistant francophone, convivial et intelligent. Tu dois répondre naturellement en français, de manière amicale et concise, comme si tu étais un humain très sympa.",
+          },
+
+          userInput,
+        ],
+      }),
+    });
+    /*________________gestion du resultat___________________*/
+    const result = await response.json();
+    answerIa = result.choices[0].message.content;
+    conversation.push({ role: "user", content: messageToIa });
+
+    conversation.push({
+      role: "assistant",
+      content: result.choices[0].message.content,
     });
 
-    console.log("✅ Response object:", response);
-    const result = await response.json();
-    console.log("🧠 Réponse IA :", result);
+    timestampIA = result.created;
+
+    // console.log("🧠 Réponse IA :", answerIa);
+    messageToIa = "";
   }
 </script>
 
@@ -64,28 +123,14 @@
 
   <!-- ______Chat_________ -->
   <section class="discussion">
-    <section class="question">
-      <span class="id_user"
-        >vous <br /><time datetime="">today 00:00</time></span
-      >
-      <p>
-        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Minus
-        molestiae consequuntur obcaecati dolore dolorem velit voluptatum
-        accusamus tempore qui eaque culpa, saepe corrupti quis odio commodi
-        consequatur temporibus quasi odit. <br />Lorem ipsum dolor, sit amet
-        consectetur adipisicing elit. Minus molestiae consequuntur obcaecati
-        dolore dolorem velit voluptatum accusamus tempore qui eaque culpa, saepe
-        corrupti quis odio commodi consequatur temporibus quasi odit.
-      </p>
-    </section>
-    <section class="answer">
-      <p>
-        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Minus
-        molestiae consequuntur obcaecati dolore dolorem velit voluptatum
-        accusamus tempore qui eaque culpa, saepe corrupti quis odio commodi
-        consequatur temporibus quasi odit.
-      </p>
-    </section>
+    {#each conversation as message (message)}
+      <section class={message.role === "user" ? "question" : "answer"}>
+        <span class="id_user"
+          >{message.role === "user" ? "vous" : "copilot"}</span
+        >
+        <p>{message.content}</p>
+      </section>
+    {/each}
   </section>
 </section>
 <!-- ______Chat_________ -->
@@ -103,6 +148,18 @@
 
 <!-- ______input_________ -->
 
+<!-- ______verif token_________ -->
+<section class="verifToken" bind:this={verif_Token}>
+  <form class="formToken" onsubmit={verifToken}>
+    <input
+      bind:value={tokenUser}
+      type="text"
+      class="inputToken"
+      placeholder="Merci de renseigner votre token mistral ici"
+    /><input type="submit" class="subToken" value="soummettre" />
+  </form>
+</section>
+
 <!-- ________________^^__html___^^________________ -->
 
 <!-- ________________vv__CSS___vv________________ -->
@@ -119,6 +176,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    position: relative;
   }
 
   nav {
@@ -129,12 +187,11 @@
     gap: 30px;
     background-color: var(--blue-color);
     border-radius: 0 0 20px 0;
-    position: sticky;
+    position: absolute;
     left: 0;
     top: 0;
     z-index: 99;
     min-width: 130px;
-    /* max-width: 30%; */
   }
 
   .setting_icon {
@@ -165,7 +222,6 @@
     justify-content: space-between;
     background-color: var(--grey-color);
     border-radius: 0 20px 20px 0;
-    max-width: 95%;
     min-height: 2.5em;
 
     h2 {
@@ -185,7 +241,7 @@
   }
 
   .discussion {
-    position: absolute;
+    position: relative;
     top: 0;
     right: 0;
     display: flex;
@@ -193,6 +249,7 @@
     padding: 20px 0;
     gap: 20px;
     width: 100%;
+    height: 80vh;
   }
 
   .question {
@@ -211,6 +268,7 @@
   }
 
   .answer {
+    color: var(--grey-color);
     background-color: var(--blue-color);
     padding: 0.5em;
     border-radius: 20px;
@@ -236,6 +294,7 @@
   }
 
   #input_user {
+    margin: 1em;
     width: 100%;
   }
 
@@ -249,15 +308,53 @@
   #btn_sub:hover,
   #menu:hover,
   #setting:hover,
-  #delete:hover {
+  #delete:hover,
+  .subToken:hover {
     transform: scale(1.1);
     cursor: pointer;
     transition: transform 0.3s ease;
   }
-  @media screen and (max-width: 900px) {
-    .close {
-      display: none;
-    }
+
+  .verifToken {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--blue-color);
+    position: fixed;
+    top: 0;
+    z-index: 199;
+  }
+
+  .formToken {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 300px;
+    height: 200px;
+    border: var(--red-color) solid 4px;
+    background-color: #d9d9d9;
+    border-radius: 20px;
+  }
+
+  .inputToken {
+    background-color: white;
+    width: 90%;
+    height: 30%;
+    border-radius: 10px;
+  }
+
+  .subToken {
+    background-color: var(--blue-color);
+    padding: 10px;
+    border-radius: 10px;
+    color: var(--grey-color);
+  }
+  .close {
+    display: none;
   }
 
   /* ___________  passage en descktop ___________ */
@@ -269,7 +366,9 @@
     nav {
       position: relative;
       height: 80vh;
+      min-width: 210px;
       width: 210px;
+      z-index: auto;
     }
 
     .nav_salon {
