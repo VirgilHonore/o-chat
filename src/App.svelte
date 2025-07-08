@@ -1,6 +1,10 @@
 <script>
   import Icon from "@iconify/svelte";
   let salon;
+
+  const localKey = localStorage.getItem("maCle");
+  console.log("la clé est " + localKey);
+
   function openCloseMenu() {
     salon.classList.toggle("close");
   }
@@ -10,6 +14,7 @@
   /*_________________vérif token________________________*/
   let verif_Token;
   let tokenUser = $state("");
+
   async function verifToken(event) {
     event.preventDefault();
 
@@ -28,9 +33,36 @@
       localStorage.setItem("maCle", tokenUser);
       verif_Token.classList.toggle("close");
     } else {
+      alert("token non valide");
+      tokenUser = "";
     }
 
-    console.log(response.status);
+    //   if (localKey) {
+    //     verif_Token.classList.toggle("close");
+    //   } else {
+    //     const response = await fetch(
+    //       "https://api.mistral.ai/v1/chat/completions",
+    //       {
+    //         method: "post",
+    //         headers: {
+    //           Authorization: "Bearer " + tokenUser,
+    //           "Content-Type": "application/json",
+    //         },
+    //         body: JSON.stringify({
+    //           model: "mistral-small-latest",
+    //           messages: [{ role: "user", content: "." }],
+    //         }),
+    //       }
+    //     );
+    //     if (response.status === 200) {
+    //       localStorage.setItem("maCle", tokenUser);
+    //       verif_Token.classList.toggle("close");
+    //     } else {
+    //       console.log(response.status);
+    //       alert("token non valide");
+    //       tokenUser = "";
+    //     }
+    //   }
   }
 
   /*_________________connexion Mistral________________________*/
@@ -122,6 +154,7 @@
   <!-- _______nav_________ -->
 
   <!-- ______Chat_________ -->
+  <!--la creation du chat dinamique a etait fais par ia je le referais moi plus tard-->
   <section class="discussion">
     {#each conversation as message (message)}
       <section class={message.role === "user" ? "question" : "answer"}>
