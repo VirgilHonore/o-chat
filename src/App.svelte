@@ -1,7 +1,7 @@
 <script>
   import Icon from "@iconify/svelte";
+  let salon = "";
   function openCloseMenu() {
-    const salon = document.getElementById("nav_salon");
     salon.classList.toggle("open");
   }
 </script>
@@ -9,39 +9,35 @@
 <section class="main_chat">
   <nav>
     <div class="setting_icon">
-      <button type="button" id="menu"
-        ><Icon
-          id="menu_burger"
-          icon="typcn:th-menu"
-          onclick={openCloseMenu}
-        /></button
+      <button type="button" id="menu" onclick={openCloseMenu}
+        ><Icon id="menu_burger" icon="typcn:th-menu" /></button
       >
       <button type="button" id="setting">
         <Icon id="gear" icon="typcn:cog" />
       </button>
     </div>
-    <section id="nav_salon">
-      <div class="onglet_salon">
-        <h1>discution</h1>
-        <button type="button" id="delete"
-          ><Icon id="cross" icon="typcn:times-outline" /></button
-        >
-      </div>
-      <div class="onglet_salon">
+    <ul bind:this={salon} class="open nav_salon">
+      <li class="onglet_salon">
+        <h1>discussion</h1>
+        <button type="button" id="delete">
+          <Icon id="cross" icon="typcn:times-outline" />
+        </button>
+      </li>
+      <li class="onglet_salon">
         <h1>di</h1>
-        <button type="button" id="delete"
-          ><Icon id="cross" icon="typcn:times-outline" /></button
-        >
-      </div>
-      <div class="onglet_salon">
-        <h1>discution</h1>
-        <button type="button" id="delete"
-          ><Icon id="cross" icon="typcn:times-outline" /></button
-        >
-      </div>
-    </section>
+        <button type="button" id="delete">
+          <Icon id="cross" icon="typcn:times-outline" />
+        </button>
+      </li>
+      <li class="onglet_salon">
+        <h1>discussion</h1>
+        <button type="button" id="delete">
+          <Icon id="cross" icon="typcn:times-outline" />
+        </button>
+      </li>
+    </ul>
   </nav>
-  <section class="discution">
+  <section class="discussion">
     <section class="question">
       <span class="id_user"
         >vous <br /><time datetime="">today 00:00</time></span
@@ -66,10 +62,10 @@
     </section>
   </section>
 </section>
-<section class="input_user">
-  <input type="text" placeholder="écrir ici" />
+<form class="input_user">
+  <input type="text" placeholder="Écris ici" />
   <button type="submit" id="btn_sub"></button>
-</section>
+</form>
 
 <style>
   :root {
@@ -94,6 +90,7 @@
     left: 0;
     top: 0;
     z-index: 99;
+    transition: max-height;
   }
 
   .setting_icon {
@@ -112,7 +109,7 @@
     background-color: var(--grey-color);
     border-radius: 50%;
   }
-  #nav_salon {
+  .nav_salon {
     min-height: 30vh;
     max-height: 75vh;
     display: none;
@@ -142,7 +139,7 @@
     color: var(--blue-color);
   }
 
-  .discution {
+  .discussion {
     position: fixed;
     top: 0;
     display: flex;
@@ -201,6 +198,7 @@
     transition: transform 0.3s ease;
   }
   .open {
+    display: initial;
     display: flex;
     flex-direction: column;
     gap: 1em;
