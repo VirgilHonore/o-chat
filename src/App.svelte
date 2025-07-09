@@ -199,15 +199,22 @@
   <!-- _______nav_________ -->
 
   <!-- ______Chat_________ -->
-  <!--la creation du chat dinamique a etait fais par ia je le referais moi plus tard-->
+  <!--creation maison apres avoir compris la logique-->
+  <!--du coup le probleme de l affichage  du prompt systeme est resolu-->
   <section class="discussion">
-    {#each conversation as message (message)}
-      <section class={message.role === "user" ? "question" : "answer"}>
-        <span class="id_user"
-          >{message.role === "user" ? "vous" : "copilot"}</span
-        >
-        <p>{message.content}</p>
-      </section>
+    {#each conversation as Exchanges}
+      {#if Exchanges.role === "user"}
+        <section class="question">
+          <span>vous</span>
+          <p>{Exchanges.content}</p>
+        </section>
+      {/if}
+      {#if Exchanges.role === "assistant"}
+        <section class="answer">
+          <span>mistral</span>
+          <p>{Exchanges.content}</p>
+        </section>
+      {/if}
     {/each}
   </section>
 </section>
