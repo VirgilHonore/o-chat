@@ -1,12 +1,11 @@
 <script>
-  /*pas bie compris ce passage mais je reviendrai dessus plusatrd pour linstant ca debug*/
+  /*pas bie compris ce passage avec onMount mais je reviendrai dessus plusatrd pour linstant ca debug*/
   import { onMount } from "svelte";
 
   import Icon from "@iconify/svelte";
 
-  onMount(() => {
-    firstverifToken();
-  });
+  onMount(firstverifToken);
+  onMount(callPB);
 
   /*_________________gestion ouverture du menu________________________*/
   let salon;
@@ -61,16 +60,12 @@
 
   let answerIa = $state("");
 
-  let conversation = $state([
-    {
-      role: "system",
-      content:
-        "Tu es un assistant francophone, convivial et intelligent. Tu dois répondre naturellement en français, de manière amicale et concise, comme si tu étais un humain très sympa.",
-    },
-  ]);
+  let conversation = $state([]);
+
   /*__________________________comunication ia_________________________________*/
   async function sendToIa(event) {
     event.preventDefault();
+    callPB();
     /*_______creation du message user_________*/
     const userTalk = {
       role: "user",
@@ -100,34 +95,55 @@
       content: answerIa,
     };
 
-    conversation.push(iaTalk);
-
     /*________________gestion du resultat___________________*/
+    conversation.push(iaTalk);
+    // savPB(conversation);
 
     timestampIA = result.created;
     inputUser = "";
-    console.log(conversation);
+    // console.log(conversation);
     /*il y a un defaut avec l affichage du prompt pour le systeme mais on verra plus tard*/
   }
 
   /*_____________________________communication avec pocket base____________________________________*/
-
   /*__________recuperation de conversation via pocket base_______________*/
   async function callPB() {
-    let responsePB = await fetch(
+    const responsePBBrut = await fetch(
       "http://127.0.0.1:8090/api/collections/discution/records",
       {
         headers: {
           "Content-Type": "application/json",
         },
-        // body: JSON.stringify(data),
       }
     );
-    responsePB = await responsePB.json();
-    await console.log(responsePB);
+
+    const responsePBTrad = await responsePBBrut.json();
+
+    for (const talk of responsePBTrad.items) {
+      if (talk.role && talk.content) {
+        conversation.push({
+          role: talk.role,
+          content: talk.content,
+        });
+      }
+    }
+
+    console.log(JSON.parse(JSON.stringify(conversation)));
   }
-  callPB();
   /*________envoi de conversation via pocket base___________*/
+
+  // async function savPB(conversation) {
+  //   const responsePBBrut = await fetch(
+  //     "http://127.0.0.1:8090/api/collections/discution/records",
+  //     {
+  //       method: "post",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(conversation),
+  //     }
+  //   );
+  // }
 
   /*____________________________dark mode_____________________________*/
   /*pourquoi il faut que la classe dark mode soif appliqué d originie pour que ca fonctionne ?*/
