@@ -99,12 +99,18 @@
 
     /*________________gestion du resultat___________________*/
     conversation.push(iaTalk);
-    console.log("apres envoi ia", JSON.parse(JSON.stringify(conversation)));
-    // savPB(conversation);
+    console.log(
+      "dans sendToIa apres envoi ia",
+      JSON.parse(JSON.stringify(conversation))
+    );
+    savPB(conversation);
+    console.log(
+      "dans sendToIa apres envoi  savPB",
+      JSON.parse(JSON.stringify(conversation))
+    );
 
     timestampIA = result.created;
     inputUser = "";
-    // console.log(conversation);
   }
 
   /*_____________________________communication avec pocket base____________________________________*/
@@ -133,19 +139,32 @@
     console.log(JSON.parse(JSON.stringify(conversation)));
   }
   /*________envoi de conversation via pocket base___________*/
-
-  // async function savPB(conversation) {
-  //   const responsePBBrut = await fetch(
-  //     "http://127.0.0.1:8090/api/collections/discution/records",
-  //     {
-  //       method: "post",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(conversation),
-  //     }
-  //   );
-  // }
+  /*piste pour demain demonter le tableau conversation pour en sortir toute les objet et les envoyer un pas un a pocket base 
+(on vas avoir a coup sur des doublons peut etre tout suprimer pocket base avant denvoyer )*/
+  async function savPB(conversation) {
+    console.log(
+      "avant dans savPB savPB conversation=",
+      JSON.parse(JSON.stringify(conversation))
+    );
+    const responsePBBrut = await fetch(
+      "http://127.0.0.1:8090/api/collections/discution/records",
+      {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(conversation),
+      }
+    );
+    console.log(
+      "apres savPB conversation=",
+      JSON.parse(JSON.stringify(conversation))
+    );
+    console.log(
+      "apres savPB repBrut=",
+      JSON.parse(JSON.stringify(responsePBBrut))
+    );
+  }
 
   /*____________________________dark mode_____________________________*/
   /*pourquoi il faut que la classe dark mode soif appliqué d originie pour que ca fonctionne ?*/
