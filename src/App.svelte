@@ -65,13 +65,15 @@
   /*__________________________comunication ia_________________________________*/
   async function sendToIa(event) {
     event.preventDefault();
-    callPB();
+
     /*_______creation du message user_________*/
     const userTalk = {
       role: "user",
       content: inputUser,
     };
     conversation.push(userTalk);
+    console.log("avant envoi ia", JSON.parse(JSON.stringify(conversation)));
+
     /*____________envoi a ia______________________*/
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
       method: "post",
@@ -97,12 +99,12 @@
 
     /*________________gestion du resultat___________________*/
     conversation.push(iaTalk);
+    console.log("apres envoi ia", JSON.parse(JSON.stringify(conversation)));
     // savPB(conversation);
 
     timestampIA = result.created;
     inputUser = "";
     // console.log(conversation);
-    /*il y a un defaut avec l affichage du prompt pour le systeme mais on verra plus tard*/
   }
 
   /*_____________________________communication avec pocket base____________________________________*/
@@ -283,6 +285,7 @@
     top: 0;
     z-index: 99;
     min-width: 150px;
+    box-shadow: 0 4px 4px 6px rgba(0, 0, 0, 0.2);
   }
 
   .setting_icon {
@@ -290,11 +293,15 @@
     flex-direction: row;
     justify-content: space-between;
     margin: 0 5px;
+    gap: 10px;
   }
 
   #menu,
   #setting,
   #delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 40px;
     aspect-ratio: 1/1;
     background-color: var(--grey-color);
@@ -340,7 +347,8 @@
     padding: 20px 0;
     gap: 20px;
     width: 100%;
-    height: 80vh;
+    height: 90vh;
+    overflow-y: auto;
   }
 
   .question {
@@ -350,7 +358,8 @@
     margin-left: auto;
     padding: 0.5em;
     background-color: var(--grey-color);
-    max-width: 60vw;
+    max-width: calc(100% - 10px);
+    /* max-width: 60vw; */
     border-radius: 20px 0 0 20px;
   }
 
@@ -365,6 +374,7 @@
     border-radius: 20px;
     margin: 0 10px;
     margin-right: auto;
+    max-width: calc(100% - 20px);
   }
 
   .terminal_user {
@@ -376,6 +386,7 @@
     /*______________________________________________________________*/
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
     background-color: var(--grey-color);
     border-radius: 20px 20px 0 0;
