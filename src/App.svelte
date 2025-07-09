@@ -1,5 +1,12 @@
 <script>
   import Icon from "@iconify/svelte";
+  import { onMount } from "svelte";
+  import { preventDefault } from "svelte/legacy";
+  /*pas bie compris ce passage mais je reviendrai dessus plusatrd pour linstant ca debug*/
+  onMount(() => {
+    firstverifToken();
+  });
+
   let salon;
 
   const localKey = localStorage.getItem("maCle");
@@ -15,7 +22,18 @@
   let verif_Token;
   let tokenUser = $state("");
 
-  async function verifToken(event) {
+  async function firstverifToken() {
+    if (localKey === null) {
+      verif_Token.classList.remove("close");
+    } else {
+      /*pas sur que la securité sois optimal a verifier plus tard*/
+      verif_Token.classList.add("close");
+    }
+    console.log(Authorization);
+  }
+  firstverifToken();
+
+  async function verifTokenOnSub(event) {
     event.preventDefault();
 
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
@@ -36,33 +54,6 @@
       alert("token non valide");
       tokenUser = "";
     }
-
-    //   if (localKey) {
-    //     verif_Token.classList.toggle("close");
-    //   } else {
-    //     const response = await fetch(
-    //       "https://api.mistral.ai/v1/chat/completions",
-    //       {
-    //         method: "post",
-    //         headers: {
-    //           Authorization: "Bearer " + tokenUser,
-    //           "Content-Type": "application/json",
-    //         },
-    //         body: JSON.stringify({
-    //           model: "mistral-small-latest",
-    //           messages: [{ role: "user", content: "." }],
-    //         }),
-    //       }
-    //     );
-    //     if (response.status === 200) {
-    //       localStorage.setItem("maCle", tokenUser);
-    //       verif_Token.classList.toggle("close");
-    //     } else {
-    //       console.log(response.status);
-    //       alert("token non valide");
-    //       tokenUser = "";
-    //     }
-    //   }
   }
 
   /*_________________connexion Mistral________________________*/
@@ -113,13 +104,20 @@
     // console.log("🧠 Réponse IA :", answerIa);
     messageToIa = "";
   }
+
+  /*pourquoi il faut que la classe dark mode soif appliqué d originie pour que ca fonctionne*/
+  let main_page;
+  function darkMode(event) {
+    event.preventDefault();
+    main_page.classList.toggle("dark_mode");
+  }
 </script>
 
 <!-- ________________^^__JS___^^________________ -->
 
 <!-- ________________vv__html___vv________________ -->
 
-<section class="main_chat">
+<section class="main_chat dark_mode" bind:this={main_page}>
   <!-- _______nav_________ -->
   <nav>
     <div class="setting_icon">
@@ -127,7 +125,13 @@
         ><Icon id="menu_burger" icon="typcn:th-menu" /></button
       >
       <button type="button" id="setting">
+        <Icon icon="typcn:document-add" />
+      </button>
+      <button type="button" id="setting">
         <Icon id="gear" icon="typcn:cog" />
+      </button>
+      <button type="button" id="setting">
+        <Icon id="dark-mode" icon="typcn:adjust-contrast" onclick={darkMode} />
       </button>
     </div>
     <ul bind:this={salon} class="nav_salon close">
@@ -183,7 +187,7 @@
 
 <!-- ______verif token_________ -->
 <section class="verifToken" bind:this={verif_Token}>
-  <form class="formToken" onsubmit={verifToken}>
+  <form class="formToken" onsubmit={verifTokenOnSub}>
     <input
       bind:value={tokenUser}
       type="text"
@@ -204,12 +208,18 @@
     --blue-color: #237ac0;
     --red-color: #ff5656;
     --grey-color: #d9d9d9;
+    --dark-mode: #282c34;
   }
+
   .main_chat {
     display: flex;
     flex-direction: column;
     height: 100vh;
     position: relative;
+  }
+  /*pourquoi il faut que la classe dark mode soif appliqué d originie pour que ca fonctionne*/
+  .dark_mode {
+    background-color: var(--dark-mode);
   }
 
   nav {
@@ -224,7 +234,7 @@
     left: 0;
     top: 0;
     z-index: 99;
-    min-width: 130px;
+    min-width: 150px;
   }
 
   .setting_icon {
