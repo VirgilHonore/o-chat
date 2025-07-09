@@ -1,27 +1,25 @@
 <script>
   import Icon from "@iconify/svelte";
-  import { onMount } from "svelte";
-  import { preventDefault } from "svelte/legacy";
+
   /*pas bie compris ce passage mais je reviendrai dessus plusatrd pour linstant ca debug*/
+  import { onMount } from "svelte";
   onMount(() => {
     firstverifToken();
   });
 
+  /*_________________gestion ouverture du menu________________________*/
   let salon;
-
-  const localKey = localStorage.getItem("maCle");
-  console.log("la clé est " + localKey);
-
   function openCloseMenu() {
     salon.classList.toggle("close");
   }
-
-  let conversation = $state([]);
+  /*____________________________________________________________*/
+  const localKey = localStorage.getItem("maCle");
+  console.log("la clé est " + localKey);
 
   /*_________________vérif token________________________*/
   let verif_Token;
   let tokenUser = $state("");
-
+  /*__evite de toujours taper le token___*/
   async function firstverifToken() {
     if (localKey === null) {
       verif_Token.classList.remove("close");
@@ -29,10 +27,10 @@
       /*pas sur que la securité sois optimal a verifier plus tard*/
       verif_Token.classList.add("close");
     }
-    console.log(Authorization);
   }
   firstverifToken();
 
+  /*_____gestion du token______*/
   async function verifTokenOnSub(event) {
     event.preventDefault();
 
@@ -57,55 +55,64 @@
   }
 
   /*_________________connexion Mistral________________________*/
-  let messageToIa = $state("");
-  let answerIa = $state("");
-  let timestampIA = $state(null);
-  let userInput = {
-    role: "user",
-    content: messageToIa,
-  };
-  let messageUser;
+  let timestampIA = $state(null); /*ia on verra plus tard*/
 
+  let inputUser = $state("");
+
+  let answerIa = $state("");
+
+  let conversation = $state([
+    {
+      role: "system",
+      content:
+        "Tu es un assistant francophone, convivial et intelligent. Tu dois répondre naturellement en français, de manière amicale et concise, comme si tu étais un humain très sympa.",
+    },
+  ]);
+
+  /*________comunication ia___________*/
   async function sendToIa(event) {
     event.preventDefault();
-    messageUser = messageToIa;
-    /*________comunication ia___________*/
+    /*_______creation du message user_________*/
+    const userTalk = {
+      role: "user",
+      content: inputUser,
+    };
+    conversation.push(userTalk);
+    /*____________envoi a ia______________________*/
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
       method: "post",
       headers: {
-        Authorization: "Bearer P0lO5TWsVKCAjlyPFu7pN4cOT5GLAx5E",
+        Authorization: "Bearer " + localKey,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model: "mistral-small-latest",
-        messages: [
-          {
-            role: "system",
-            content:
-              "Tu es un assistant francophone, convivial et intelligent. Tu dois répondre naturellement en français, de manière amicale et concise, comme si tu étais un humain très sympa.",
-          },
-
-          userInput,
-        ],
+        messages: conversation,
       }),
     });
-    /*________________gestion du resultat___________________*/
     const result = await response.json();
-    answerIa = result.choices[0].message.content;
-    conversation.push({ role: "user", content: messageToIa });
 
-    conversation.push({
+    /*_______creation du message ia_________*/
+    /*result.choices[0].message.content; a etait donné par l ia*/
+    answerIa = result.choices[0].message.content;
+
+    const iaTalk = {
       role: "assistant",
-      content: result.choices[0].message.content,
-    });
+      content: answerIa,
+    };
+
+    conversation.push(iaTalk);
+
+    /*________________gestion du resultat___________________*/
 
     timestampIA = result.created;
-
-    // console.log("🧠 Réponse IA :", answerIa);
-    messageToIa = "";
+    inputUser = "";
+    console.log(conversation);
+    /*il y a un defaut avec l affichage du prompt pour le systeme mais on verra plus tard*/
   }
 
-  /*pourquoi il faut que la classe dark mode soif appliqué d originie pour que ca fonctionne*/
+  /*_____________________dark mode_____________________________*/
+  /*pourquoi il faut que la classe dark mode soif appliqué d originie pour que ca fonctionne ?*/
   let main_page;
   function darkMode(event) {
     event.preventDefault();
@@ -178,7 +185,7 @@
     name="input_user"
     id="input_user"
     placeholder="Écris ici"
-    bind:value={messageToIa}
+    bind:value={inputUser}
   ></textarea>
   <input type="submit" value="" id="btn_sub" />
 </form>
