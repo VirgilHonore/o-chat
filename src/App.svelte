@@ -92,10 +92,10 @@
     };
     conversation.push(userTalk);
 
-    console.log(
-      "conv avant envoi mistra",
-      JSON.parse(JSON.stringify(conversation))
-    );
+    // console.log(
+    //   "conv avant envoi mistra",
+    //   JSON.parse(JSON.stringify(conversation))
+    // );
     /*je sais que j'utilise ce bout de code à 2 endroits mais pas le temps pour le mettre dans une fonction. On verra demain, là il est l'heure d'une bonne bière*/
     const conversationClean = [];
     for (const talk of conversation) {
@@ -167,14 +167,14 @@
     }
     cleanCallPB();
 
-    console.log(
-      "converstion fin callpb brut",
-      JSON.parse(JSON.stringify(responsePBTrad.items))
-    );
-    console.log(
-      "converstion fin callpb",
-      JSON.parse(JSON.stringify(conversation))
-    );
+    //   console.log(
+    //     "converstion fin callpb brut",
+    //     JSON.parse(JSON.stringify(responsePBTrad.items))
+    //   );
+    //   console.log(
+    //     "converstion fin callpb",
+    //     JSON.parse(JSON.stringify(conversation))
+    //   );
   }
   /*_____________________gestion des salon___________________________*/
   let idSalontest = $state("");
@@ -183,16 +183,16 @@
     idSalontest = idSalon;
   }
 
-  $effect(() => {
-    console.log("idSalontest :", idSalontest);
-  });
+  // $effect(() => {
+  //   console.log("idSalontest :", idSalontest);
+  // });
 
   /*________envoi de conversation a pocket base___________*/
 
   async function savPB(Talk) {
     Talk.salon = idSalontest;
 
-    console.log("talk", JSON.parse(JSON.stringify(Talk)));
+    // console.log("talk", JSON.parse(JSON.stringify(Talk)));
     await fetch("http://127.0.0.1:8090/api/collections/discution/records", {
       method: "post",
       headers: {
