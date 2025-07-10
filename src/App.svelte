@@ -6,8 +6,6 @@
   onMount(firstverifToken);
   onMount(callPB);
 
-  alert("id de la relation est écrit en Dur !!! ");
-
   /*_________________gestion ouverture du menu________________________*/
   let salon;
   function openCloseMenu() {
@@ -63,9 +61,11 @@
       }),
     });
     if (response.status === 200) {
+      alert("id de la relation est écrit en Dur !!! ");
       localStorage.setItem("maCle", tokenUser);
       verif_Token.classList.toggle("close");
       savPB();
+      /*pas sûr, mais ça doit planter si on passe 2 fois par ici en rentrant un nouveau token car Mistral n'aime pas avoir 2 messages système  */
     } else {
       alert("token non valide");
       tokenUser = "";
@@ -96,6 +96,16 @@
       "conv avant envoi mistra",
       JSON.parse(JSON.stringify(conversation))
     );
+    /*je sais que j'utilise ce bout de code à 2 endroits mais pas le temps pour le mettre dans une fonction. On verra demain, là il est l'heure d'une bonne bière*/
+    const conversationClean = [];
+    for (const talk of conversation) {
+      if (talk.role && talk.content) {
+        conversationClean.push({
+          role: talk.role,
+          content: talk.content,
+        });
+      }
+    }
 
     /*____________envoi a ia______________________*/
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
@@ -106,9 +116,10 @@
       },
       body: JSON.stringify({
         model: "mistral-small-latest",
-        messages: conversation,
+        messages: conversationClean,
       }),
     });
+
     const result = await response.json();
 
     /*_______creation du message ia_________*/
@@ -144,14 +155,17 @@
 
     const responsePBTrad = await responsePBBrut.json();
 
-    for (const talk of responsePBTrad.items) {
-      if (talk.role && talk.content) {
-        conversation.push({
-          role: talk.role,
-          content: talk.content,
-        });
+    function cleanCallPB() {
+      for (const talk of responsePBTrad.items) {
+        if (talk.role && talk.content) {
+          conversation.push({
+            role: talk.role,
+            content: talk.content,
+          });
+        }
       }
     }
+    cleanCallPB();
 
     console.log(
       "converstion fin callpb brut",
@@ -162,10 +176,21 @@
       JSON.parse(JSON.stringify(conversation))
     );
   }
+  /*_____________________gestion des salon___________________________*/
+  let idSalontest = $state("");
 
-  /*________envoi de conversation via pocket base___________*/
+  function gestionIdSalon(idSalon) {
+    idSalontest = idSalon;
+  }
+
+  $effect(() => {
+    console.log("idSalontest :", idSalontest);
+  });
+
+  /*________envoi de conversation a pocket base___________*/
+
   async function savPB(Talk) {
-    Talk.salon = "3sslay2ago081cj";
+    Talk.salon = idSalontest;
 
     console.log("talk", JSON.parse(JSON.stringify(Talk)));
     await fetch("http://127.0.0.1:8090/api/collections/discution/records", {
@@ -201,20 +226,46 @@
     </div>
     <ul bind:this={salon} class="nav_salon close">
       <li class="onglet_salon">
-        <h2>discussion</h2>
-        <button type="button" id="delete">
+        <button
+          type="button"
+          class="salon"
+          onclick={() => gestionIdSalon("3sslay2ago081cj")}
+          ><h2>salon 1</h2>
+        </button>
+        <button type="button" class="delete">
           <Icon id="cross" icon="typcn:times-outline" />
         </button>
       </li>
       <li class="onglet_salon">
-        <h2>di</h2>
-        <button type="button" id="delete">
+        <button
+          type="button"
+          class="salon"
+          onclick={() => gestionIdSalon("3fp34okoiut5an5")}
+          ><h2>salon 2</h2>
+        </button>
+        <button type="button" class="delete">
           <Icon id="cross" icon="typcn:times-outline" />
         </button>
       </li>
       <li class="onglet_salon">
-        <h2>discussion</h2>
-        <button type="button" id="delete">
+        <button
+          type="button"
+          class="salon"
+          onclick={() => gestionIdSalon("7rxpkfdbh4exzf3")}
+          ><h2>salon 3</h2>
+        </button>
+        <button type="button" class="delete">
+          <Icon id="cross" icon="typcn:times-outline" />
+        </button>
+      </li>
+      <li class="onglet_salon">
+        <button
+          type="button"
+          class="salon"
+          onclick={() => gestionIdSalon("7nt1th2n7bzgp12")}
+          ><h2>salon 4</h2>
+        </button>
+        <button type="button" class="delete">
           <Icon id="cross" icon="typcn:times-outline" />
         </button>
       </li>
@@ -321,7 +372,7 @@
 
   #menu,
   #setting,
-  #delete {
+  .delete {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -345,6 +396,11 @@
     border-radius: 0 20px 20px 0;
     min-height: 2.5em;
 
+    .salon {
+      width: 100%;
+      border-radius: 0 20px 20px 0;
+    }
+
     h2 {
       margin: auto 0;
       padding: 0.3rem;
@@ -355,7 +411,7 @@
 
   #menu :global(svg),
   #setting :global(svg),
-  #delete :global(svg) {
+  .delete :global(svg) {
     width: 80%;
     height: 80%;
     color: var(--blue-color);
@@ -433,8 +489,9 @@
   #btn_sub:hover,
   #menu:hover,
   #setting:hover,
-  #delete:hover,
-  .subToken:hover {
+  .delete:hover,
+  .subToken:hover,
+  .salon:hover {
     transform: scale(1.1);
     cursor: pointer;
     transition: transform 0.3s ease;
