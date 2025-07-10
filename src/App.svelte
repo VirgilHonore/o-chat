@@ -6,16 +6,27 @@
   onMount(firstverifToken);
   onMount(callPB);
 
+  alert("id de la relation est écrit en Dur !!! ");
+
   /*_________________gestion ouverture du menu________________________*/
   let salon;
   function openCloseMenu() {
     salon.classList.toggle("close");
   }
+
+  /*____________________________dark mode_____________________________*/
+  /*pourquoi il faut que la classe dark mode soit appliquée d'origine pour que ça fonctionne ?*/
+  let main_page;
+  function darkMode(event) {
+    event.preventDefault();
+    main_page.classList.toggle("dark_mode");
+  }
   /*____________________________________________________________*/
+
+  /*************************************vérif token********************************************/
   const localKey = localStorage.getItem("maCle");
   console.log("la clé local est " + localKey);
 
-  /*_________________vérif token________________________*/
   let verif_Token;
   let tokenUser = $state("");
   /*__evite de toujours taper le token___*/
@@ -24,6 +35,7 @@
       verif_Token.classList.remove("close");
     } else {
       /*pas sur que la securité sois optimal a verifier plus tard*/
+      /*effectivement, il suffit d'ajouter la classe close manuellement dans la console*/
       verif_Token.classList.add("close");
     }
   }
@@ -40,12 +52,20 @@
       },
       body: JSON.stringify({
         model: "mistral-small-latest",
-        messages: [{ role: "user", content: "." }],
+        messages: [
+          {
+            /***************comme un ping mais en plus sympa**********/
+            role: "system",
+            content:
+              "Tu es un assistant francophone, convivial et intelligent. Tu dois répondre naturellement en français, de manière amicale et concise, comme si tu étais un humain très sympa.",
+          },
+        ],
       }),
     });
     if (response.status === 200) {
       localStorage.setItem("maCle", tokenUser);
       verif_Token.classList.toggle("close");
+      savPB();
     } else {
       alert("token non valide");
       tokenUser = "";
@@ -61,7 +81,7 @@
 
   let conversation = $state([]);
 
-  /*__________________________comunication ia_________________________________*/
+  /********************************comunication ia***********************************************************/
   async function sendToIa(event) {
     event.preventDefault();
 
@@ -71,6 +91,11 @@
       content: inputUser,
     };
     conversation.push(userTalk);
+
+    console.log(
+      "conv avant envoi mistra",
+      JSON.parse(JSON.stringify(conversation))
+    );
 
     /*____________envoi a ia______________________*/
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
@@ -104,7 +129,8 @@
     inputUser = "";
   }
 
-  /*_____________________________communication avec pocket base____________________________________*/
+  /*****************************************communication avec pocket base*********************************************/
+
   /*__________recuperation de conversation via pocket base_______________*/
   async function callPB() {
     const responsePBBrut = await fetch(
@@ -126,10 +152,22 @@
         });
       }
     }
+
+    console.log(
+      "converstion fin callpb brut",
+      JSON.parse(JSON.stringify(responsePBTrad.items))
+    );
+    console.log(
+      "converstion fin callpb",
+      JSON.parse(JSON.stringify(conversation))
+    );
   }
 
   /*________envoi de conversation via pocket base___________*/
   async function savPB(Talk) {
+    Talk.salon = "3sslay2ago081cj";
+
+    console.log("talk", JSON.parse(JSON.stringify(Talk)));
     await fetch("http://127.0.0.1:8090/api/collections/discution/records", {
       method: "post",
       headers: {
@@ -137,14 +175,6 @@
       },
       body: JSON.stringify(Talk),
     });
-  }
-
-  /*____________________________dark mode_____________________________*/
-  /*pourquoi il faut que la classe dark mode soif appliqué d originie pour que ca fonctionne ?*/
-  let main_page;
-  function darkMode(event) {
-    event.preventDefault();
-    main_page.classList.toggle("dark_mode");
   }
 </script>
 
@@ -235,7 +265,7 @@
       type="text"
       class="inputToken"
       placeholder="Merci de renseigner votre token mistral ici"
-    /><input type="submit" class="subToken" value="soummettre" />
+    /><input type="submit" class="subToken" value="soumettre" />
   </form>
 </section>
 
@@ -244,7 +274,7 @@
 <!-- ________________vv__CSS___vv________________ -->
 
 <style>
-  /*attention du css a etait ajouté a normalize*/
+  /*attention du css a ete ajouté a normalize*/
 
   :root {
     --blue-color: #237ac0;
@@ -258,8 +288,9 @@
     flex-direction: column;
     height: 100vh;
     position: relative;
+    background-color: white;
   }
-  /*pourquoi il faut que la classe dark mode soif appliqué d originie pour que ca fonctionne*/
+  /*pourquoi il faut que la classe dark mode soit appliquée d origine pour que ca fonctionne*/
   .dark_mode {
     background-color: var(--dark-mode);
   }
@@ -372,7 +403,7 @@
   .terminal_user {
     position: absolute;
     bottom: 0;
-    /* la cest creer par IA jai pas compris je reviendrai dessu plus tard*/
+    /* la cest cree par IA jai pas compris je reviendrai dessus plus tard*/
     left: 50%;
     transform: translateX(-50%);
     /*______________________________________________________________*/
@@ -478,5 +509,4 @@
       display: none;
     }
   }
-  /*menu toujours cassé a 900px on verra plus tard */
 </style>
