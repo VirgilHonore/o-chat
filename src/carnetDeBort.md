@@ -26,5 +26,5 @@
 
 ## comment j utilise l ia
 
-![retour ia](../public/Capture%20d'écran%202025-07-10%20102248.png)
+![retour ia](../public/captureChatIA.png)
 ps: ce carnet de bord a été mis en forme par IA
