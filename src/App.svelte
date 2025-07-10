@@ -1,5 +1,4 @@
 <script>
-  /*pas bie compris ce passage avec onMount mais je reviendrai dessus plusatrd pour linstant ca debug*/
   import { onMount } from "svelte";
 
   import Icon from "@iconify/svelte";
@@ -14,7 +13,7 @@
   }
   /*____________________________________________________________*/
   const localKey = localStorage.getItem("maCle");
-  console.log("la clé est " + localKey);
+  console.log("la clé local est " + localKey);
 
   /*_________________vérif token________________________*/
   let verif_Token;
@@ -72,7 +71,6 @@
       content: inputUser,
     };
     conversation.push(userTalk);
-    console.log("avant envoi ia", JSON.parse(JSON.stringify(conversation)));
 
     /*____________envoi a ia______________________*/
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
@@ -96,20 +94,13 @@
       role: "assistant",
       content: answerIa,
     };
-
-    /*________________gestion du resultat___________________*/
     conversation.push(iaTalk);
-    console.log(
-      "dans sendToIa apres envoi ia",
-      JSON.parse(JSON.stringify(conversation))
-    );
-    savPB(conversation);
-    console.log(
-      "dans sendToIa apres envoi  savPB",
-      JSON.parse(JSON.stringify(conversation))
-    );
 
-    timestampIA = result.created;
+    /*_________________sauvegarde PB_______________________*/
+
+    savPB(userTalk);
+    savPB(iaTalk);
+
     inputUser = "";
   }
 
@@ -135,35 +126,17 @@
         });
       }
     }
-
-    console.log(JSON.parse(JSON.stringify(conversation)));
   }
+
   /*________envoi de conversation via pocket base___________*/
-  /*piste pour demain demonter le tableau conversation pour en sortir toute les objet et les envoyer un pas un a pocket base 
-(on vas avoir a coup sur des doublons peut etre tout suprimer pocket base avant denvoyer )*/
-  async function savPB(conversation) {
-    console.log(
-      "avant dans savPB savPB conversation=",
-      JSON.parse(JSON.stringify(conversation))
-    );
-    const responsePBBrut = await fetch(
-      "http://127.0.0.1:8090/api/collections/discution/records",
-      {
-        method: "post",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(conversation),
-      }
-    );
-    console.log(
-      "apres savPB conversation=",
-      JSON.parse(JSON.stringify(conversation))
-    );
-    console.log(
-      "apres savPB repBrut=",
-      JSON.parse(JSON.stringify(responsePBBrut))
-    );
+  async function savPB(Talk) {
+    await fetch("http://127.0.0.1:8090/api/collections/discution/records", {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(Talk),
+    });
   }
 
   /*____________________________dark mode_____________________________*/
