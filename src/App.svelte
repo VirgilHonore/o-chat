@@ -3,8 +3,10 @@
 
   import Icon from "@iconify/svelte";
 
-  onMount(firstverifToken);
-  onMount(callPB);
+  onMount(() => {
+    firstverifToken();
+    callPB();
+  });
 
   /*_________________gestion ouverture du menu________________________*/
   let salon;
@@ -28,56 +30,57 @@
   let verif_Token;
   let tokenUser = $state("");
   /*__evite de toujours taper le token___*/
-  async function firstverifToken() {
+  const firstverifToken = async () => {
     try {
-    if (localKey === null) {
-      verif_Token.classList.remove("close");
-    } else {
-      /*pas sur que la securité sois optimal a verifier plus tard*/
-      /*effectivement, il suffit d'ajouter la classe close manuellement dans la console*/
-      verif_Token.classList.add("close");
-          } catch (error) {
+      if (localKey === null) {
+        if (verif_Token) {
+          verif_Token.classList.remove("close");
+        }
+      } else {
+        if (verif_Token) {
+          verif_Token.classList.add("close");
+        }
+      }
+    } catch (error) {
       console.error("Erreur dans firstverifToken:", error);
     }
   };
-  }
-  /*_____gestion du token______*/
-  async function verifTokenOnSub(event) {
-  event.preventDefault();
-  try {
 
-    const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
-      method: "post",
-      headers: {
-        Authorization: "Bearer " + tokenUser,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "mistral-small-latest",
-        messages: [
-          {
-            /***************comme un ping mais en plus sympa**********/
-            role: "system",
-            content:
-              "Tu es un assistant francophone, convivial et intelligent. Tu dois répondre naturellement en français, de manière amicale et concise, comme si tu étais un humain très sympa.",
-          },
-        ],
-      }),
-    });
-    if (response.status === 200) {
-      alert("id de la relation est écrit en Dur !!! ");
-      localStorage.setItem("maCle", tokenUser);
-      verif_Token.classList.toggle("close");
-      savPB();
-      /*pas sûr, mais ça doit planter si on passe 2 fois par ici en rentrant un nouveau token car Mistral n'aime pas avoir 2 messages système  */
-    } else {
-      alert("token non valide");
-      tokenUser = "";
-    } 
-  }}catch (error) {
+  const verifTokenOnSub = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+        method: "post",
+        headers: {
+          Authorization: "Bearer " + tokenUser,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "mistral-small-latest",
+          messages: [
+            {
+              role: "system",
+              content:
+                "Tu es un assistant francophone, convivial et intelligent. Tu dois répondre naturellement en français, de manière amicale et concise, comme si tu étais un humain très sympa.",
+            },
+          ],
+        }),
+      });
+      if (response.status === 200) {
+        alert("id de la relation est écrit en Dur !!! ");
+        localStorage.setItem("maCle", tokenUser);
+        if (verif_Token) {
+          verif_Token.classList.toggle("close");
+        }
+        savPB();
+      } else {
+        alert("token non valide");
+        tokenUser = "";
+      }
+    } catch (error) {
       console.error("Erreur dans verifTokenOnSub:", error);
       alert("Une erreur est survenue lors de la vérification du token.");
-
+    }
   };
 
   /*_________________connexion Mistral________________________*/
@@ -90,112 +93,79 @@
   let conversation = $state([]);
 
   /********************************comunication ia***********************************************************/
-  async function sendToIa(event) {
+  const sendToIa = async (event) => {
     event.preventDefault();
-
-    /*_______creation du message user_________*/
-   try {
-    
-     const userTalk = {
-       role: "user",
-       content: inputUser,
+    try {
+      const userTalk = {
+        role: "user",
+        content: inputUser,
       };
       conversation.push(userTalk);
-      // console.log(
-        //   "conv avant envoi mistra",
-        //   JSON.parse(JSON.stringify(conversation))
-        // );
-        /*je sais que j'utilise ce bout de code à 2 endroits mais pas le temps pour le mettre dans une fonction. On verra demain, là il est l'heure d'une bonne bière*/
-        const conversationClean = [];
-        for (const talk of conversation) {
-          if (talk.role && talk.content) {
-            conversationClean.push({
-          role: talk.role,
-          content: talk.content,
-        });
-      }
-    }
-    
-  } catch (error) {
-    console.error("Erreur dans sendToIa:", error);
-    alert("Une erreur est survenue lors de l'envoi du message à l'IA.");
-    return;
-  }
 
-    /*____________envoi a ia______________________*/
-    const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
-      method: "post",
-      headers: {
-        Authorization: "Bearer " + localKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "mistral-small-latest",
-        messages: conversationClean,
-      }),
-    });
+      const conversationClean = conversation.filter(
+        (talk) => talk.role && talk.content
+      );
 
-    const result = await response.json();
-
-    /*_______creation du message ia_________*/
-    /*result.choices[0].message.content; a etait donné par l ia*/
-    answerIa = result.choices[0].message.content;
-
-    const iaTalk = {
-      role: "assistant",
-      content: answerIa,
-    };
-    conversation.push(iaTalk);
-
-    /*_________________sauvegarde PB_______________________*/
-
-    savPB(userTalk);
-    savPB(iaTalk);
-
-    inputUser = "";
-  }
-
-  /*****************************************communication avec pocket base*********************************************/
-
-  /*__________recuperation de conversation via pocket base_______________*/
-  async function callPB() {
-try {
-      const responsePBBrut = await fetch(
-      "http://127.0.0.1:8090/api/collections/discution/records",
-      {
+      const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+        method: "post",
         headers: {
+          Authorization: "Bearer " + localKey,
           "Content-Type": "application/json",
         },
-      }
-    );
+        body: JSON.stringify({
+          model: "mistral-small-latest",
+          messages: conversationClean,
+        }),
+      });
 
-    const responsePBTrad = await responsePBBrut.json();
+      const result = await response.json();
+      answerIa = result.choices[0].message.content;
 
-    function cleanCallPB() {
-      for (const talk of responsePBTrad.items) {
+      const iaTalk = {
+        role: "assistant",
+        content: answerIa,
+      };
+      conversation.push(iaTalk);
+
+      savPB(userTalk);
+      savPB(iaTalk);
+
+      inputUser = "";
+    } catch (error) {
+      console.error("Erreur dans sendToIa:", error);
+      alert("Une erreur est survenue lors de l'envoi à l'IA.");
+    }
+  };
+
+  /*********************************************communication avec pocket base*********************************************/
+
+  /*__________recuperation de conversation via pocket base_______________*/
+  const callPB = async () => {
+    try {
+      const responsePBBrut = await fetch(
+        "http://127.0.0.1:8090/api/collections/discution/records",
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const responsePBTrad = await responsePBBrut.json();
+
+      responsePBTrad.items.forEach((talk) => {
         if (talk.role && talk.content) {
           conversation.push({
             role: talk.role,
             content: talk.content,
           });
         }
-      }
+      });
+    } catch (error) {
+      console.error("Erreur dans callPB:", error);
+      alert("Une erreur est survenue lors de la récupération des conversations.");
     }
-    cleanCallPB();
-} catch (error) {
-  console.error("Erreur dans callPB:", error);
-  alert("Une erreur est survenue lors de la récupération de la conversation.");
-}
-
-    //   console.log(
-    //     "converstion fin callpb brut",
-    //     JSON.parse(JSON.stringify(responsePBTrad.items))
-    //   );
-    //   console.log(
-    //     "converstion fin callpb",
-    //     JSON.parse(JSON.stringify(conversation))
-    //   );
-  }
+  };
   /*_____________________gestion des salon___________________________*/
   let idSalontest = $state("");
 
@@ -209,23 +179,21 @@ try {
 
   /*________envoi de conversation a pocket base___________*/
 
-  async function savPB(Talk) {
-try {
+  const savPB = async (Talk) => {
+    try {
       Talk.salon = idSalontest;
-
-    // console.log("talk", JSON.parse(JSON.stringify(Talk)));
-    await fetch("http://127.0.0.1:8090/api/collections/discution/records", {
-      method: "post",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(Talk),
-    });
-} catch (error) {
-  console.error("Erreur dans savPB:", error);
-  alert("Une erreur est survenue lors de l'enregistrement de la conversation.");
-}
-  }
+      await fetch("http://127.0.0.1:8090/api/collections/discution/records", {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(Talk),
+      });
+    } catch (error) {
+      console.error("Erreur dans savPB:", error);
+      alert("Une erreur est survenue lors de la sauvegarde de la conversation.");
+    }
+  };
 </script>
 
 <!-- ________________^^__JS___^^________________ -->
