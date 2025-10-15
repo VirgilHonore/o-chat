@@ -29,18 +29,22 @@
   let tokenUser = $state("");
   /*__evite de toujours taper le token___*/
   async function firstverifToken() {
+    try {
     if (localKey === null) {
       verif_Token.classList.remove("close");
     } else {
       /*pas sur que la securité sois optimal a verifier plus tard*/
       /*effectivement, il suffit d'ajouter la classe close manuellement dans la console*/
       verif_Token.classList.add("close");
+          } catch (error) {
+      console.error("Erreur dans firstverifToken:", error);
     }
+  };
   }
-
   /*_____gestion du token______*/
   async function verifTokenOnSub(event) {
-    event.preventDefault();
+  event.preventDefault();
+  try {
 
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
       method: "post",
@@ -69,8 +73,12 @@
     } else {
       alert("token non valide");
       tokenUser = "";
-    }
-  }
+    } 
+  }}catch (error) {
+      console.error("Erreur dans verifTokenOnSub:", error);
+      alert("Une erreur est survenue lors de la vérification du token.");
+
+  };
 
   /*_________________connexion Mistral________________________*/
   let timestampIA = $state(null); /*ia on verra plus tard*/
@@ -86,26 +94,33 @@
     event.preventDefault();
 
     /*_______creation du message user_________*/
-    const userTalk = {
-      role: "user",
-      content: inputUser,
-    };
-    conversation.push(userTalk);
-
-    // console.log(
-    //   "conv avant envoi mistra",
-    //   JSON.parse(JSON.stringify(conversation))
-    // );
-    /*je sais que j'utilise ce bout de code à 2 endroits mais pas le temps pour le mettre dans une fonction. On verra demain, là il est l'heure d'une bonne bière*/
-    const conversationClean = [];
-    for (const talk of conversation) {
-      if (talk.role && talk.content) {
-        conversationClean.push({
+   try {
+    
+     const userTalk = {
+       role: "user",
+       content: inputUser,
+      };
+      conversation.push(userTalk);
+      // console.log(
+        //   "conv avant envoi mistra",
+        //   JSON.parse(JSON.stringify(conversation))
+        // );
+        /*je sais que j'utilise ce bout de code à 2 endroits mais pas le temps pour le mettre dans une fonction. On verra demain, là il est l'heure d'une bonne bière*/
+        const conversationClean = [];
+        for (const talk of conversation) {
+          if (talk.role && talk.content) {
+            conversationClean.push({
           role: talk.role,
           content: talk.content,
         });
       }
     }
+    
+  } catch (error) {
+    console.error("Erreur dans sendToIa:", error);
+    alert("Une erreur est survenue lors de l'envoi du message à l'IA.");
+    return;
+  }
 
     /*____________envoi a ia______________________*/
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
@@ -144,7 +159,8 @@
 
   /*__________recuperation de conversation via pocket base_______________*/
   async function callPB() {
-    const responsePBBrut = await fetch(
+try {
+      const responsePBBrut = await fetch(
       "http://127.0.0.1:8090/api/collections/discution/records",
       {
         headers: {
@@ -166,6 +182,10 @@
       }
     }
     cleanCallPB();
+} catch (error) {
+  console.error("Erreur dans callPB:", error);
+  alert("Une erreur est survenue lors de la récupération de la conversation.");
+}
 
     //   console.log(
     //     "converstion fin callpb brut",
@@ -190,7 +210,8 @@
   /*________envoi de conversation a pocket base___________*/
 
   async function savPB(Talk) {
-    Talk.salon = idSalontest;
+try {
+      Talk.salon = idSalontest;
 
     // console.log("talk", JSON.parse(JSON.stringify(Talk)));
     await fetch("http://127.0.0.1:8090/api/collections/discution/records", {
@@ -200,6 +221,10 @@
       },
       body: JSON.stringify(Talk),
     });
+} catch (error) {
+  console.error("Erreur dans savPB:", error);
+  alert("Une erreur est survenue lors de l'enregistrement de la conversation.");
+}
   }
 </script>
 
